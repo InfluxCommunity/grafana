@@ -78,6 +78,8 @@ export function TraceToLogsSettings({ options, onOptionsChange }: Props) {
     'grafana-splunk-datasource', // external
     'grafana-opensearch-datasource', // external
     'grafana-falconlogscale-datasource', // external
+    'influxdata-flightsql-datasource', // external
+    'influxdb', // external
   ];
 
   const traceToLogs = useMemo(

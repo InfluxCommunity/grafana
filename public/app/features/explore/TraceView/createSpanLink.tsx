@@ -23,6 +23,9 @@ import { getDatasourceSrv } from 'app/features/plugins/datasource_srv';
 import { PromQuery } from 'app/plugins/datasource/prometheus/types';
 
 import { LokiQuery } from '../../../plugins/datasource/loki/types';
+import { InfluxQuery } from '../../../plugins/datasource/influxdb/types';
+
+
 import { getFieldLinksForExplore, getVariableUsageInfo } from '../utils/links';
 
 import { SpanLinkFunc, Trace, TraceSpan } from './components';
@@ -157,6 +160,14 @@ function legacyCreateSpanLinkFactory(
           tags = getFormattedTags(span, tagsToUse, { joinBy: ' ' });
           query = getQueryForSplunk(span, traceToLogsOptions, tags, customQuery);
           break;
+        case 'influxdata-flightsql-datasource':
+            tags = getFormattedTags(span, tagsToUse, { joinBy: ' OR ' });
+            query = getQueryFlightSQL(span, traceToLogsOptions, tags, customQuery);
+          break;
+        case 'influxdb':
+            tags = getFormattedTags(span, tagsToUse, { joinBy: ' OR ' });
+            query = getQueryForInfluxQL(span, traceToLogsOptions, tags, customQuery);
+          break;
         case 'elasticsearch':
         case 'grafana-opensearch-datasource':
           tags = getFormattedTags(span, tagsToUse, { labelValueSign: ':', joinBy: ' AND ' });
@@ -165,6 +176,7 @@ function legacyCreateSpanLinkFactory(
         case 'grafana-falconlogscale-datasource':
           tags = getFormattedTags(span, tagsToUse, { joinBy: ' OR ' });
           query = getQueryForFalconLogScale(span, traceToLogsOptions, tags, customQuery);
+          break;
       }
 
       // query can be false in case the simple UI tag mapping is used but none of them are present in the span.
@@ -337,6 +349,70 @@ function getQueryForLoki(
   };
 }
 
+function getQueryForInfluxQL(
+  span: TraceSpan,
+  options: TraceToLogsOptionsV2,
+  tags: string,
+  customQuery?: string
+): InfluxQuery | undefined {
+  const { filterByTraceID, filterBySpanID } = options;
+
+
+  if (customQuery) {
+    return {
+      refId: '',
+      rawQuery: true,
+      query: customQuery,
+      resultFormat: 'logs',
+    };
+  }
+
+  let query = 'SELECT time, "severity_text", body, attributes FROM logs WHERE time >=${__from}ms AND time <=${__to}ms';
+
+  if (filterByTraceID && span.traceID && filterBySpanID && span.spanID) {
+            query = 'SELECT time, "severity_text", body, attributes FROM logs WHERE "trace_id"=\'${__span.traceId}\' AND "span_id"=\'${__span.spanId}\' AND time >=${__from}ms AND time <=${__to}ms';
+    } else if (filterByTraceID && span.traceID) {
+            query = 'SELECT time, "severity_text", body, attributes FROM logs WHERE "trace_id"=\'${__span.traceId}\' AND time >=${__from}ms AND time <=${__to}ms';
+    } else if (filterBySpanID && span.spanID) {
+            query = 'SELECT time, "severity_text", body, attributes FROM logs WHERE "span_id"=\'${__span.spanId}\' AND time >=${__from}ms AND time <=${__to}ms';
+  }
+
+  return {
+    refId: '',
+    rawQuery: true,
+    query: query,
+    resultFormat: 'logs',
+  };
+}
+
+function getQueryFlightSQL(span: TraceSpan, options: TraceToLogsOptionsV2, tags: string, customQuery?: string) {
+  const { filterByTraceID, filterBySpanID } = options;
+  if (customQuery) {
+    return {
+      refId: '',
+      rawEditor: true,
+      rawQuery: true,
+      queryText: customQuery,
+      query: customQuery,
+    };
+  }
+
+  let query = 'SELECT time, "severity_text", body FROM logs WHERE $__timeRange(time)';
+  if (filterByTraceID && span.traceID) {
+    query = 'SELECT time, "severity_text", body FROM logs WHERE "trace_id"=\'${__span.traceId}\' AND $__timeRange(time)';
+  }
+  if (filterBySpanID && span.spanID) {
+    query = 'SELECT time, "severity_text", body FROM logs WHERE "span_id"=\'${__span.spanId}\' AND $__timeRange(time)';
+  }
+
+  return {
+    refId: '',
+    rawEditor: true,
+    rawQuery: true,
+    queryText: query,
+    query: query,
+  };
+}
 // we do not have access to the dataquery type for opensearch,
 // so here is a minimal interface that handles both elasticsearch and opensearch.
 interface ElasticsearchOrOpensearchQuery extends DataQuery {
