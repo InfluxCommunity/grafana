@@ -62,6 +62,10 @@ type FrontendSettingsReportingDTO struct {
 	Enabled bool `json:"enabled"`
 }
 
+type FrontendSettingsAnalyticsDTO struct {
+	Enabled bool `json:"enabled"`
+}
+
 type FrontendSettingsUnifiedAlertingDTO struct {
 	MinInterval              string `json:"minInterval"`
 	AlertStateHistoryBackend string `json:"alertStateHistoryBackend,omitempty"`
@@ -188,6 +192,7 @@ type FrontendSettingsDTO struct {
 
 	FeatureToggles                   map[string]bool                `json:"featureToggles"`
 	AnonymousEnabled                 bool                           `json:"anonymousEnabled"`
+	AnonymousDeviceLimit             int64                          `json:"anonymousDeviceLimit"`
 	RendererAvailable                bool                           `json:"rendererAvailable"`
 	RendererVersion                  string                         `json:"rendererVersion"`
 	SecretsManagerPluginEnabled      bool                           `json:"secretsManagerPluginEnabled"`
@@ -209,12 +214,14 @@ type FrontendSettingsDTO struct {
 	Caching                 FrontendSettingsCachingDTO         `json:"caching"`
 	RecordedQueries         FrontendSettingsRecordedQueriesDTO `json:"recordedQueries"`
 	Reporting               FrontendSettingsReportingDTO       `json:"reporting"`
+	Analytics               FrontendSettingsAnalyticsDTO       `json:"analytics"`
 	UnifiedAlertingEnabled  bool                               `json:"unifiedAlertingEnabled"`
 	UnifiedAlerting         FrontendSettingsUnifiedAlertingDTO `json:"unifiedAlerting"`
 	Oauth                   map[string]any                     `json:"oauth"`
 	SamlEnabled             bool                               `json:"samlEnabled"`
 	SamlName                string                             `json:"samlName"`
 	TokenExpirationDayLimit int                                `json:"tokenExpirationDayLimit"`
+	SharedWithMeFolderUID   string                             `json:"sharedWithMeFolderUID"`
 
 	GeomapDefaultBaseLayerConfig *map[string]any `json:"geomapDefaultBaseLayerConfig,omitempty"`
 	GeomapDisableCustomBaseLayer bool            `json:"geomapDisableCustomBaseLayer"`
@@ -224,6 +231,9 @@ type FrontendSettingsDTO struct {
 	DateFormats setting.DateFormats `json:"dateFormats,omitempty"`
 
 	LoginError string `json:"loginError,omitempty"`
+
+	// The K8s namespace to use for this user
+	Namespace string `json:"namespace,omitempty"`
 
 	PluginsCDNBaseURL string `json:"pluginsCDNBaseURL,omitempty"`
 

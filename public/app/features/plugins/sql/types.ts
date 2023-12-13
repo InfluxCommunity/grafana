@@ -170,3 +170,5 @@ export interface MetaDefinition {
   completion?: string;
   kind: CompletionItemKind;
 }
+
+export type SQLDialect = 'postgres' | 'influx' | 'other';
