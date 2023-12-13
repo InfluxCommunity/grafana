@@ -8,7 +8,6 @@ import {
   onUpdateDatasourceJsonDataOptionSelect,
   onUpdateDatasourceOption,
   onUpdateDatasourceSecureJsonDataOption,
-  updateDatasourcePluginJsonDataOption,
   SelectableValue,
   updateDatasourcePluginResetOption,
 } from '@grafana/data';

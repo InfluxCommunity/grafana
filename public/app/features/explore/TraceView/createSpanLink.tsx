@@ -569,17 +569,17 @@ function getQueryForInfluxSQL(
   }
   console.log('get query for influx sql');
 
-  let query = "SELECT * FROM logs WHERE time >= '${__from:date}' AND time <= '${__to:date}' ORDER BY time DESC";
+  let query = "SELECT time, attributes, \"event.name\"  FROM logs WHERE time >= '${__from:date}' AND time <= '${__to:date}' ORDER BY time";
 
   if (filterByTraceID && span.traceID && filterBySpanID && span.spanID) {
     query =
-      "SELECT * FROM logs WHERE \"trace_id\" LIKE '%${__span.traceId}' AND \"span_id\" LIKE '%${__span.spanId}' AND time >= '${__from:date}' AND time <= '${__to:date}' ORDER BY time DESC";
+      "SELECT time, attributes, \"event.name\" FROM logs WHERE \"trace_id\" LIKE '%${__span.traceId}' AND \"span_id\" LIKE '%${__span.spanId}' AND time >= '${__from:date}' AND time <= '${__to:date}' ORDER BY time";
   } else if (filterByTraceID && span.traceID) {
     query =
-      "SELECT * FROM logs WHERE \"trace_id\" LIKE '%${__span.traceId}' AND time >= '${__from:date}' AND time <= '${__to:date}' ORDER BY time DESC";
+      "SELECT time, attributes, \"event.name\" FROM logs WHERE \"trace_id\" LIKE '%${__span.traceId}' AND time >= '${__from:date}' AND time <= '${__to:date}' ORDER BY time";
   } else if (filterBySpanID && span.spanID) {
     query =
-      "SELECT * FROM logs WHERE \"span_id\" LIKE '%${__span.traceId}' AND time >= '${__from:date}' AND time <= '${__to:date}' ORDER BY time DESC";
+      "SELECT time, attributes, \"event.name\" FROM logs WHERE \"span_id\" LIKE '%${__span.traceId}' AND time >= '${__from:date}' AND time <= '${__to:date}' ORDER BY time";
   }
 
   return {
